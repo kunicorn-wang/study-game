@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乘法口诀小乐园</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        candyPink: '#FF9BB3',
+                        candyBlue: '#8CD0E3',
+                        candyYellow: '#FFE0B2',
+                        candyGreen: '#C8E6C9',
+                        candyPurple: '#D1C4E9',
+                        candyOrange: '#FFCCBC'
+                    },
+                    fontFamily: {
+                        cute: ['Comic Sans MS', 'Marker Felt', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .candy-shadow {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), inset 0 -2px 4px rgba(255, 255, 255, 0.5);
+            }
+            .btn-hover {
+                transition: all 0.2s ease;
+            }
+            .btn-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-cute min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <!-- 游戏标题 -->
+        <header class="text-center mb-8">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-candyPink to-candyPurple mb-2">乘法小乐园</h1>
+            <p class="text-gray-600 text-lg">二年级乘法口诀练习游戏</p>
+        </header>
+
+        <!-- 游戏设置区域 -->
+        <div id="settings" class="bg-white rounded-2xl p-6 mb-6 candy-shadow">
+            <h2 class="text-xl font-bold text-candyBlue mb-4">游戏设置</h2>
+            <div class="mb-4">
+                <label for="time-setting" class="block text-gray-700 mb-2">游戏时间：<span id="time-value">60</span>秒</label>
+                <input type="range" id="time-setting" min="30" max="120" step="10" value="60" 
+                       class="w-full h-3 bg-candyYellow rounded-lg appearance-none cursor-pointer">
+                <div class="flex justify-between text-sm text-gray-500 mt-1">
+                    <span>30秒</span>
+                    <span>120秒</span>
+                </div>
+            </div>
+            <button id="start-btn" class="w-full bg-candyPink hover:bg-pink-300 text-white font-bold py-3 px-4 rounded-full transition-all btn-hover">
+                <i class="fa fa-play mr-2"></i>开始游戏
+            </button>
+        </div>
+
+        <!-- 游戏区域 -->
+        <div id="game-area" class="hidden bg-white rounded-2xl p-6 mb-6 candy-shadow">
+            <!-- 计分和时间 -->
+            <div class="flex justify-between mb-6">
+                <div class="bg-candyGreen px-4 py-2 rounded-full">
+                    <span class="text-gray-700">得分：</span>
+                    <span id="score" class="font-bold">0</span>
+                </div>
+                <div class="bg-candyBlue px-4 py-2 rounded-full">
+                    <span class="text-gray-700">时间：</span>
+                    <span id="timer" class="font-bold">60</span>
+                    <span>秒</span>
+                </div>
+            </div>
+
+            <!-- 题目显示 -->
+            <div class="text-center mb-8">
+                <div id="question" class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-gray-800 mb-6 min-h-[80px] flex items-center justify-center">
+                    准备开始啦！
+                </div>
+                
+                <!-- 填空输入 -->
+                <div class="flex justify-center items-center gap-4">
+                    <input type="number" id="answer-input" min="1" max="81" 
+                           class="w-20 h-16 text-2xl font-bold text-center border-2 border-candyBlue rounded-lg focus:outline-none focus:ring-2 focus:ring-candyBlue focus:border-transparent"
+                           placeholder="?">
+                    <button id="submit-btn" class="bg-candyPink hover:bg-pink-300 text-white font-bold py-3 px-6 rounded-full transition-all btn-hover">
+                        <i class="fa fa-check mr-2"></i>提交
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 错题库区域 -->
+        <div id="wrong-questions" class="bg-white rounded-2xl p-6 mb-6 candy-shadow">
+            <h2 class="text-xl font-bold text-candyOrange mb-4 flex items-center">
+                <i class="fa fa-exclamation-circle mr-2"></i>错题库
+            </h2>
+            <div id="wrong-list" class="text-gray-700 mb-4 min-h-[60px]">
+                还没有错题哦，继续加油！
+            </div>
+            <button id="download-btn" class="w-full bg-candyPurple hover:bg-purple-300 text-white font-bold py-2 px-4 rounded-full transition-all btn-hover hidden">
+                <i class="fa fa-download mr-2"></i>下载错题
+            </button>
+        </div>
+
+        <!-- 游戏说明 -->
+        <div class="bg-white rounded-2xl p-6 candy-shadow">
+            <h2 class="text-xl font-bold text-candyGreen mb-3">游戏说明</h2>
+            <ul class="text-gray-600 space-y-2">
+                <li><i class="fa fa-check-circle text-candyGreen mr-2"></i>选择游戏时间后点击"开始游戏"按钮</li>
+                <li><i class="fa fa-check-circle text-candyGreen mr-2"></i>在输入框中填写正确的答案并点击提交</li>
+                <li><i class="fa fa-check-circle text-candyGreen mr-2"></i>答对一题得10分，答错会记录到错题库</li>
+                <li><i class="fa fa-check-circle text-candyGreen mr-2"></i>时间结束后可以下载错题进行复习</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态变量
+        let gameStarted = false;
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval;
+        let wrongQuestions = [];
+        let currentQuestion = {};
+
+        // DOM元素
+        const startBtn = document.getElementById('start-btn');
+        const timeSetting = document.getElementById('time-setting');
+        const timeValue = document.getElementById('time-value');
+        const timerDisplay = document.getElementById('timer');
+        const scoreDisplay = document.getElementById('score');
+        const questionDisplay = document.getElementById('question');
+        const answerInput = document.getElementById('answer-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const settingsPanel = document.getElementById('settings');
+        const gameArea = document.getElementById('game-area');
+        const wrongList = document.getElementById('wrong-list');
+        const downloadBtn = document.getElementById('download-btn');
+
+        // 更新时间显示
+        timeSetting.addEventListener('input', function() {
+            timeValue.textContent = this.value;
+            timeLeft = parseInt(this.value);
+            timerDisplay.textContent = timeLeft;
+        });
+
+        // 开始游戏
+        startBtn.addEventListener('click', startGame);
+
+        // 提交答案
+        submitBtn.addEventListener('click', () => {
+            if (!gameStarted) return;
+            
+            const userAnswer = parseInt(answerInput.value);
+            if (isNaN(userAnswer)) return;
+            
+            checkAnswer(userAnswer);
+            answerInput.value = '';
+            answerInput.focus();
+        });
+
+        // 支持回车键提交答案
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitBtn.click();
+            }
+        });
+
+        // 开始游戏函数
+        function startGame() {
+            // 重置游戏状态
+            score = 0;
+            scoreDisplay.textContent = score;
+            timeLeft = parseInt(timeSetting.value);
+            timerDisplay.textContent = timeLeft;
+            gameStarted = true;
+            
+            // 隐藏设置面板，显示游戏区域
+            settingsPanel.classList.add('hidden');
+            gameArea.classList.remove('hidden');
+            
+            // 清空输入框并聚焦
+            answerInput.value = '';
+            answerInput.focus();
+            
+            // 开始计时
+            startTimer();
+            
+            // 生成第一题
+            generateQuestion();
+        }
+
+        // 开始计时器
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // 生成题目
+        function generateQuestion() {
+            // 生成乘法口诀范围内的数字 (1-9)
+            const num1 = Math.floor(Math.random() * 9) + 1;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            const product = num1 * num2;
+            
+            // 随机决定是乘法还是除法题
+            const isMultiplication = Math.random() > 0.3; // 70%乘法，30%除法
+            
+            let questionText, correctAnswer;
+            
+            if (isMultiplication) {
+                // 乘法题
+                questionText = `${num1} × ${num2} = ?`;
+                correctAnswer = product;
+            } else {
+                // 除法题 (基于乘法口诀)
+                questionText = `${product} ÷ ${num1} = ?`;
+                correctAnswer = num2;
+            }
+            
+            // 保存当前问题
+            currentQuestion = {
+                text: questionText,
+                answer: correctAnswer
+            };
+            
+            // 显示问题
+            questionDisplay.textContent = questionText;
+        }
+
+        // 检查答案
+        function checkAnswer(selectedAnswer) {
+            if (!gameStarted) return;
+            
+            const isCorrect = selectedAnswer === currentQuestion.answer;
+            
+            // 显示正确/错误反馈
+            if (isCorrect) {
+                questionDisplay.style.color = '#4CAF50';
+                questionDisplay.textContent = '正确！';
+                score += 10;
+                scoreDisplay.textContent = score;
+            } else {
+                questionDisplay.style.color = '#F44336';
+                questionDisplay.textContent = `错误，正确答案是 ${currentQuestion.answer}`;
+                // 记录错题
+                wrongQuestions.push(currentQuestion.text.replace(' = ?', ` = ${currentQuestion.answer}`));
+                updateWrongList();
+            }
+            
+            // 短暂延迟后显示下一题
+            setTimeout(() => {
+                questionDisplay.style.color = '';
+                generateQuestion();
+            }, 800);
+        }
+
+        // 更新错题列表
+        function updateWrongList() {
+            if (wrongQuestions.length === 0) {
+                wrongList.textContent = '还没有错题哦，继续加油！';
+                downloadBtn.classList.add('hidden');
+                return;
+            }
+            
+            // 显示错题
+            wrongList.innerHTML = '';
+            wrongQuestions.forEach((q, index) => {
+                const item = document.createElement('div');
+                item.className = 'mb-1 flex items-center';
+                item.innerHTML = `<span class="text-candyOrange mr-2">${index + 1}.</span> ${q}`;
+                wrongList.appendChild(item);
+            });
+            
+            // 显示下载按钮
+            downloadBtn.classList.remove('hidden');
+        }
+
+        // 结束游戏
+        function endGame() {
+            gameStarted = false;
+            clearInterval(timerInterval);
+            questionDisplay.textContent = `游戏结束！最终得分：${score}`;
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+            
+            // 显示重新开始按钮
+            const restartBtn = document.createElement('button');
+            restartBtn.textContent = '再玩一次';
+            restartBtn.className = 'bg-candyPink hover:bg-pink-300 text-white font-bold py-3 px-6 rounded-full text-lg transition-all btn-hover mt-4';
+            restartBtn.addEventListener('click', () => {
+                gameArea.classList.add('hidden');
+                settingsPanel.classList.remove('hidden');
+                answerInput.disabled = false;
+                submitBtn.disabled = false;
+            });
+            
+            // 替换输入区域为重新开始按钮
+            const inputContainer = answerInput.parentElement;
+            inputContainer.innerHTML = '';
+            inputContainer.appendChild(restartBtn);
+        }
+
+        // 下载错题
+        downloadBtn.addEventListener('click', () => {
+            if (wrongQuestions.length === 0) return;
+            
+            // 构建错题文本
+            let textContent = "乘法口诀练习错题:\n\n";
+            wrongQuestions.forEach((q, index) => {
+                textContent += `${index + 1}. ${q}\n`;
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '乘法练习错题.txt';
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 0);
+        });
+    </script>
+</body>
+</html>
